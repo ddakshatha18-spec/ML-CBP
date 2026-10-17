@@ -78,6 +78,42 @@ def main():
 
     df = df.sort_values(["patient_id", "visit_number"]).copy()
 
+    # Integrity checks: patient visits and first-visit measurements.
+    first_visits = df.groupby("patient_id", sort=False).head(1)
+
+    if first_visits["has_previous_visit"].any():
+        raise ValueError(
+            "Integrity error: a patient's first recorded visit "
+            "is marked as having a previous visit."
+        )
+
+    if first_visits["wound_area_change_pp"].notna().any():
+        raise ValueError(
+            "Integrity error: a patient's first recorded visit "
+            "has a wound-area change value."
+        )
+
+    if df.duplicated(["patient_id", "visit_number"]).any():
+        raise ValueError(
+            "Integrity error: duplicate patient/visit keys found."
+        )
+
+    if not df.groupby("patient_id")["visit_number"].apply(
+        lambda visits: visits.is_monotonic_increasing
+    ).all():
+        raise ValueError(
+            "Integrity error: visit numbers are not increasing."
+        )
+
+    print("Integrity checks passed:")
+    print(f"  Patients: {df['patient_id'].nunique()}")
+    print(f"  First visits: {len(first_visits)}")
+    print(
+        "  First-visit area changes missing: "
+        f"{first_visits['wound_area_change_pp'].isna().sum()}"
+    )
+
+
     # Only comparable rows are included in threshold comparisons.
     comparable = (
         df["has_previous_visit"]
