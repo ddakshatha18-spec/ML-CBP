@@ -64,11 +64,13 @@ class CombinedLoss(nn.Module):
     def __init__(
         self,
         num_classes=6,
-        ignore_index=255
+        ignore_index=255,
+        class_weights=None
     ):
         super().__init__()
 
         self.cross_entropy = nn.CrossEntropyLoss(
+            weight=class_weights,
             ignore_index=ignore_index
         )
 

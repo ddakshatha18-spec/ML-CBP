@@ -1,0 +1,7 @@
+Class,Dice,IoU
+Background,0.956935,0.917425
+Epithelial,0.356293,0.216762
+Slough,0.334867,0.201105
+Granulation,0.674211,0.508536
+Necrotic,0.377864,0.232942
+Other,0.000000,0.000000

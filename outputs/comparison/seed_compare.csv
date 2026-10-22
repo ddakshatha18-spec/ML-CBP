@@ -1,0 +1,7 @@
+Class,Baseline mean,Baseline std,ResNet34+weights mean,ResNet34+weights std
+Background,0.9527,0.0028,0.9565,0.0025
+Epithelial,0.2849,0.0608,0.3572,0.0265
+Slough,0.2621,0.0246,0.3185,0.0248
+Granulation,0.597,0.0082,0.6715,0.0183
+Necrotic,0.185,0.1427,0.3281,0.1242
+Other,0.0,0.0,0.0,0.0

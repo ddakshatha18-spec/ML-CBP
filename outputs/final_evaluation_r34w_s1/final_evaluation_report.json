@@ -1,0 +1,117 @@
+{
+    "model": {
+        "architecture": "U-Net",
+        "checkpoint": "checkpoints/best_model_r34w_s1.pth",
+        "image_size": [
+            256,
+            256
+        ],
+        "num_classes": 6
+    },
+    "dataset": {
+        "name": "LUTSeg",
+        "split": "validation",
+        "validation_images": 30
+    },
+    "binary_wound_segmentation": {
+        "dice": 0.7978774606896903,
+        "iou": 0.6637239005163769
+    },
+    "tissue_segmentation": {
+        "classes": {
+            "Background": {
+                "dice": 0.9587155303022182,
+                "iou": 0.9207047240226987
+            },
+            "Epithelial": {
+                "dice": 0.38404862098796205,
+                "iou": 0.23766100018600939
+            },
+            "Slough": {
+                "dice": 0.2900210095710268,
+                "iou": 0.1696050133915802
+            },
+            "Granulation": {
+                "dice": 0.6520379676158571,
+                "iou": 0.48372131554966447
+            },
+            "Necrotic": {
+                "dice": 0.18681193314699676,
+                "iou": 0.103029540378142
+            },
+            "Other": {
+                "dice": 0.0,
+                "iou": 0.0
+            }
+        },
+        "mean_dice": 0.41193917693734344,
+        "mean_iou": 0.3191202655880158
+    },
+    "batch_analysis": {
+        "average_wound_area_percent": 18.320668538411457,
+        "average_tissue_percentages": {
+            "Epithelial": 41.26630147332836,
+            "Slough": 23.853634082419557,
+            "Granulation": 30.147364702065545,
+            "Necrotic": 1.3993664088532047,
+            "Other": 0.0
+        }
+    },
+    "confusion_matrix": [
+        [
+            1565210,
+            71010,
+            14881,
+            6849,
+            1392,
+            0
+        ],
+        [
+            24410,
+            52385,
+            15323,
+            10214,
+            118,
+            0
+        ],
+        [
+            1448,
+            10563,
+            13045,
+            6761,
+            60,
+            0
+        ],
+        [
+            7323,
+            34243,
+            12581,
+            87585,
+            218,
+            0
+        ],
+        [
+            7490,
+            2118,
+            1827,
+            15289,
+            3275,
+            0
+        ],
+        [
+            0,
+            35,
+            425,
+            2,
+            0,
+            0
+        ]
+    ],
+    "limitations": [
+        "Evaluation uses 30 validation images.",
+        "Wound area is reported as percentage of image pixels, not physical area in cm2.",
+        "Fine-grained tissue segmentation performs weaker than overall wound localization.",
+        "Results are specific to the LUTSeg validation dataset.",
+        "This evaluation does not constitute clinical validation."
+    ]
+}

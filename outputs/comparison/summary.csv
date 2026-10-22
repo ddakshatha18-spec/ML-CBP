@@ -1,0 +1,5 @@
+,Baseline,Weighted CE,ResNet34,ResNet34 + weights
+Mean Dice (6 classes),0.4011,0.3634,0.3854,0.4539
+"Mean Dice (tissue only, no Background)",0.2908,0.2475,0.2711,0.354
+Mean IoU (6 classes),0.3063,0.2751,0.3074,0.3497
+"Mean IoU (tissue only, no Background)",0.1856,0.1516,0.1854,0.2374
