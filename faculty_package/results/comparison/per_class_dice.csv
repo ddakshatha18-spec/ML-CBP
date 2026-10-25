@@ -1,0 +1,7 @@
+Class,Baseline,Weighted CE,ResNet34,ResNet34 + weights
+Background,0.9528,0.9433,0.9571,0.9537
+Epithelial,0.2891,0.2947,0.2937,0.3312
+Slough,0.2903,0.1275,0.3722,0.3307
+Granulation,0.605,0.4789,0.6894,0.6882
+Necrotic,0.2695,0.3362,0.0001,0.4197
+Other,0.0,0.0,0.0,0.0

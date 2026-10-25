@@ -1,0 +1,4 @@
+torch
+segmentation-models-pytorch
+pillow
+numpy
