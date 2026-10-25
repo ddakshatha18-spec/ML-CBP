@@ -1,0 +1,314 @@
+{
+  "256": {
+    "best_model_resnet34_weighted.pth": {
+      "classes": {
+        "Background": {
+          "iou": 91.15393894469639,
+          "dice": 95.37228418930833,
+          "gt_pixels": 1659342,
+          "pred_pixels": 1620894
+        },
+        "Epithelial": {
+          "iou": 19.844324822823005,
+          "dice": 33.116836950203044,
+          "gt_pixels": 102450,
+          "pred_pixels": 136661
+        },
+        "Slough": {
+          "iou": 19.81016533986528,
+          "dice": 33.06925632507028,
+          "gt_pixels": 31877,
+          "pred_pixels": 38557
+        },
+        "Granulation": {
+          "iou": 52.46704272596111,
+          "dice": 68.82411016558316,
+          "gt_pixels": 141950,
+          "pred_pixels": 150773
+        },
+        "Necrotic": {
+          "iou": 26.56032930280422,
+          "dice": 41.97259828434362,
+          "gt_pixels": 29999,
+          "pred_pixels": 19195
+        },
+        "Other": {
+          "iou": 0.0,
+          "dice": 0.0,
+          "gt_pixels": 462,
+          "pred_pixels": 0
+        }
+      },
+      "mean_iou": 34.972633522691666,
+      "mean_dice": 45.39251431908474,
+      "tissue_mean_iou": 23.736372438290722,
+      "tissue_mean_dice": 35.396560345040015,
+      "mean_iou_present_classes": 34.972633522691666,
+      "binary_wound_dice": 76.71507721758978,
+      "binary_wound_iou": 62.225838720754886,
+      "unmapped_pixels": 0,
+      "total_pixels": 1966080
+    },
+    "best_model_r34w_s1.pth": {
+      "classes": {
+        "Background": {
+          "iou": 92.07047240226987,
+          "dice": 95.87155303022182,
+          "gt_pixels": 1659342,
+          "pred_pixels": 1605881
+        },
+        "Epithelial": {
+          "iou": 23.766100018600937,
+          "dice": 38.40486209879621,
+          "gt_pixels": 102450,
+          "pred_pixels": 170354
+        },
+        "Slough": {
+          "iou": 16.96050133915802,
+          "dice": 29.002100957102677,
+          "gt_pixels": 31877,
+          "pred_pixels": 58082
+        },
+        "Granulation": {
+          "iou": 48.372131554966444,
+          "dice": 65.2037967615857,
+          "gt_pixels": 141950,
+          "pred_pixels": 126700
+        },
+        "Necrotic": {
+          "iou": 10.302954037814201,
+          "dice": 18.681193314699676,
+          "gt_pixels": 29999,
+          "pred_pixels": 5063
+        },
+        "Other": {
+          "iou": 0.0,
+          "dice": 0.0,
+          "gt_pixels": 462,
+          "pred_pixels": 0
+        }
+      },
+      "mean_iou": 31.912026558801582,
+      "mean_dice": 41.19391769373434,
+      "tissue_mean_iou": 19.880337390107922,
+      "tissue_mean_dice": 30.258390626436853,
+      "mean_iou_present_classes": 31.912026558801582,
+      "binary_wound_dice": 79.78774606896903,
+      "binary_wound_iou": 66.37239005163768,
+      "unmapped_pixels": 0,
+      "total_pixels": 1966080
+    },
+    "best_model_r34w_s2.pth": {
+      "classes": {
+        "Background": {
+          "iou": 91.7425278397476,
+          "dice": 95.693458173685,
+          "gt_pixels": 1659342,
+          "pred_pixels": 1627309
+        },
+        "Epithelial": {
+          "iou": 21.676223693544575,
+          "dice": 35.62934981963052,
+          "gt_pixels": 102450,
+          "pred_pixels": 144543
+        },
+        "Slough": {
+          "iou": 20.110495596512852,
+          "dice": 33.48665825852561,
+          "gt_pixels": 31877,
+          "pred_pixels": 48997
+        },
+        "Granulation": {
+          "iou": 50.85360551067579,
+          "dice": 67.42113367264122,
+          "gt_pixels": 141950,
+          "pred_pixels": 121724
+        },
+        "Necrotic": {
+          "iou": 23.294236928819963,
+          "dice": 37.786416476656825,
+          "gt_pixels": 29999,
+          "pred_pixels": 23507
+        },
+        "Other": {
+          "iou": 0.0,
+          "dice": 0.0,
+          "gt_pixels": 462,
+          "pred_pixels": 0
+        }
+      },
+      "mean_iou": 34.61284826155013,
+      "mean_dice": 45.002836066856524,
+      "tissue_mean_iou": 23.18691234591064,
+      "tissue_mean_dice": 34.86471164549083,
+      "mean_iou_present_classes": 34.61284826155013,
+      "binary_wound_dice": 78.07296257681922,
+      "binary_wound_iou": 64.03252652309256,
+      "unmapped_pixels": 0,
+      "total_pixels": 1966080
+    },
+    "_summary": {
+      "mean_iou": 33.83250278101446,
+      "mean_dice": 43.863089359891866,
+      "std_iou": 1.6728816600696692,
+      "std_dice": 2.319767299241137,
+      "n_checkpoints": 3
+    }
+  },
+  "native": {
+    "best_model_resnet34_weighted.pth": {
+      "classes": {
+        "Background": {
+          "iou": 92.99865753640651,
+          "dice": 96.37233618463237,
+          "gt_pixels": 60082343,
+          "pred_pixels": 61610025
+        },
+        "Epithelial": {
+          "iou": 11.27505556241716,
+          "dice": 20.26519871040222,
+          "gt_pixels": 3498092,
+          "pred_pixels": 1538207
+        },
+        "Slough": {
+          "iou": 9.535603456557059,
+          "dice": 17.410966216731488,
+          "gt_pixels": 384414,
+          "pred_pixels": 1189146
+        },
+        "Granulation": {
+          "iou": 44.79960307118263,
+          "dice": 61.87807441593526,
+          "gt_pixels": 1632009,
+          "pred_pixels": 1312656
+        },
+        "Necrotic": {
+          "iou": 20.806656514752525,
+          "dice": 34.446208702434674,
+          "gt_pixels": 166978,
+          "pred_pixels": 120206
+        },
+        "Other": {
+          "iou": 0.0,
+          "dice": 0.0,
+          "gt_pixels": 6404,
+          "pred_pixels": 0
+        }
+      },
+      "mean_iou": 29.902596023552647,
+      "mean_dice": 38.395464038356,
+      "tissue_mean_iou": 17.283383720981874,
+      "tissue_mean_dice": 26.80008960910073,
+      "mean_iou_present_classes": 29.902596023552647,
+      "binary_wound_dice": 55.17323523534257,
+      "binary_wound_iou": 38.09602135696308,
+      "unmapped_pixels": 0,
+      "total_pixels": 65770240
+    },
+    "best_model_r34w_s1.pth": {
+      "classes": {
+        "Background": {
+          "iou": 94.94068728527922,
+          "dice": 97.40469124984827,
+          "gt_pixels": 60082343,
+          "pred_pixels": 59842926
+        },
+        "Epithelial": {
+          "iou": 12.37641155848865,
+          "dice": 22.02670718320114,
+          "gt_pixels": 3498092,
+          "pred_pixels": 1696166
+        },
+        "Slough": {
+          "iou": 5.7237851009652205,
+          "dice": 10.827809646616531,
+          "gt_pixels": 384414,
+          "pred_pixels": 3012321
+        },
+        "Granulation": {
+          "iou": 44.51686893607124,
+          "dice": 61.60785140697147,
+          "gt_pixels": 1632009,
+          "pred_pixels": 1151594
+        },
+        "Necrotic": {
+          "iou": 5.258640061120849,
+          "dice": 9.991844960313562,
+          "gt_pixels": 166978,
+          "pred_pixels": 67233
+        },
+        "Other": {
+          "iou": 0.0,
+          "dice": 0.0,
+          "gt_pixels": 6404,
+          "pred_pixels": 0
+        }
+      },
+      "mean_iou": 27.136065490320863,
+      "mean_dice": 33.64315074115849,
+      "tissue_mean_iou": 13.575141131329193,
+      "tissue_mean_dice": 20.890842639420537,
+      "mean_iou_present_classes": 27.136065490320863,
+      "binary_wound_dice": 73.2038359010439,
+      "binary_wound_iou": 57.733478312414164,
+      "unmapped_pixels": 0,
+      "total_pixels": 65770240
+    },
+    "best_model_r34w_s2.pth": {
+      "classes": {
+        "Background": {
+          "iou": 93.67269129777253,
+          "dice": 96.7329887038647,
+          "gt_pixels": 60082343,
+          "pred_pixels": 61863700
+        },
+        "Epithelial": {
+          "iou": 9.835216266813838,
+          "dice": 17.9090397435408,
+          "gt_pixels": 3498092,
+          "pred_pixels": 1373794
+        },
+        "Slough": {
+          "iou": 9.400947672353624,
+          "dice": 17.186227125762475,
+          "gt_pixels": 384414,
+          "pred_pixels": 1115636
+        },
+        "Granulation": {
+          "iou": 44.748152463630795,
+          "dice": 61.82897909508607,
+          "gt_pixels": 1632009,
+          "pred_pixels": 1081133
+        },
+        "Necrotic": {
+          "iou": 9.493953346613113,
+          "dice": 17.34151166605362,
+          "gt_pixels": 166978,
+          "pred_pixels": 335977
+        },
+        "Other": {
+          "iou": 0.0,
+          "dice": 0.0,
+          "gt_pixels": 6404,
+          "pred_pixels": 0
+        }
+      },
+      "mean_iou": 27.858493507863983,
+      "mean_dice": 35.166457722384614,
+      "tissue_mean_iou": 14.695653949882274,
+      "tissue_mean_dice": 22.853151526088592,
+      "mean_iou_present_classes": 27.858493507863983,
+      "binary_wound_dice": 58.47603147532263,
+      "binary_wound_iou": 41.31881834922275,
+      "unmapped_pixels": 0,
+      "total_pixels": 65770240
+    },
+    "_summary": {
+      "mean_iou": 28.299051673912498,
+      "mean_dice": 35.735024167299706,
+      "std_iou": 1.4349186113086545,
+      "std_dice": 2.426637853160748,
+      "n_checkpoints": 3
+    }
+  }
+}

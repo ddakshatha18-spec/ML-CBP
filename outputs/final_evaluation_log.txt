@@ -1,0 +1,77 @@
+============================================================
+FINAL WOUND SEGMENTATION EVALUATION
+============================================================
+Device: cpu
+
+val: 30 samples
+Validation images: 30
+Model loaded.
+
+Processed: 2/30
+Processed: 4/30
+Processed: 6/30
+Processed: 8/30
+Processed: 10/30
+Processed: 12/30
+Processed: 14/30
+Processed: 16/30
+Processed: 18/30
+Processed: 20/30
+Processed: 22/30
+Processed: 24/30
+Processed: 26/30
+Processed: 28/30
+Processed: 30/30
+
+============================================================
+FINAL RESULTS
+============================================================
+
+OVERALL WOUND SEGMENTATION
+----------------------------------------
+Wound Dice : 0.7385
+Wound IoU  : 0.5854
+
+SIX-CLASS TISSUE SEGMENTATION
+----------------------------------------
+Background      Dice: 0.9528    IoU: 0.9098
+Epithelial      Dice: 0.2891    IoU: 0.1690
+Slough          Dice: 0.2903    IoU: 0.1698
+Granulation     Dice: 0.6050    IoU: 0.4337
+Necrotic        Dice: 0.2695    IoU: 0.1557
+Other           Dice: 0.0000    IoU: 0.0000
+
+Mean Dice: 0.4011
+Mean IoU : 0.3063
+
+AVERAGE PREDICTED WOUND COMPOSITION
+----------------------------------------
+Wound area: 14.99%
+Epithelial: 28.81%
+Slough: 16.56%
+Granulation: 34.27%
+Necrotic: 7.03%
+Other: 0.00%
+
+CONFUSION MATRIX
+----------------------------------------
+Rows = Ground Truth
+Columns = Prediction
+
+                 Background  Epithelial      Slough  Granulatio    Necrotic       Other
+Background          1586661       30474       15109       22491        4607           0
+Epithelial            51442       29443        9035       11056        1474           0
+Slough                 6508        8482       11893        4028         966           0
+Granulation           15938       31253       11691       82143         925           0
+Necrotic              10735        1603        1867        9880        5914           0
+Other                     0           2         455           0           5           0
+
+============================================================
+FINAL EVALUATION COMPLETE
+============================================================
+
+Generated files:
+1. outputs/final_evaluation/final_evaluation_report.json
+2. outputs/final_evaluation/confusion_matrix.csv
+3. outputs/final_evaluation/class_metrics.csv
+

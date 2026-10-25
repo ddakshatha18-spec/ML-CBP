@@ -1,0 +1,3 @@
+variant,mean_iou,mean_dice,tissue_mean_iou,tissue_mean_dice,binary_wound_dice,unmapped_pixels,background_iou,slough/fibrinoid_iou,granulation_iou,necrotic_iou,background_dice,slough/fibrinoid_dice,granulation_dice,necrotic_dice
+default|strict,35.64,43.93,16.05,26.20,61.07,154567,94.41,27.84,18.00,2.31,97.13,43.56,30.51,4.52
+default|lenient,35.84,44.04,16.05,26.20,63.44,0,95.22,27.84,18.00,2.31,97.55,43.56,30.51,4.52

@@ -1,0 +1,294 @@
+{
+  "name": "dfutissue_test_Original",
+  "label_space": "dfutissue_common3",
+  "common_classes": [
+    "background",
+    "fibrin/slough",
+    "granulation"
+  ],
+  "notes": [
+    "Slough is assumed to correspond to DFUTissue 'fibrin'.",
+    "Our Epithelial / Necrotic / Other have no DFUTissue counterpart."
+  ],
+  "native_confusion": [
+    [
+      191019,
+      5710,
+      1545,
+      283,
+      103,
+      0
+    ],
+    [
+      442,
+      334,
+      2855,
+      318,
+      0,
+      0
+    ],
+    [
+      9050,
+      1882,
+      1984,
+      32909,
+      1139,
+      0
+    ],
+    [
+      40703,
+      6951,
+      3847,
+      637,
+      60,
+      0
+    ]
+  ],
+  "native_gt_classes": [
+    "background",
+    "fibrin",
+    "granulation",
+    "callus"
+  ],
+  "native_pred_classes": [
+    "Background",
+    "Epithelial",
+    "Slough",
+    "Granulation",
+    "Necrotic",
+    "Other"
+  ],
+  "variants": {
+    "callus_ignore|strict": {
+      "gt_policy": "callus_ignore",
+      "pred_policy": "strict",
+      "metrics": {
+        "classes": {
+          "background": {
+            "iou": 91.76899573388677,
+            "dice": 95.70785452851034,
+            "gt_pixels": 198660,
+            "pred_pixels": 200511
+          },
+          "fibrin/slough": {
+            "iou": 38.178657395025404,
+            "dice": 55.25984709184167,
+            "gt_pixels": 3949,
+            "pred_pixels": 6384
+          },
+          "granulation": {
+            "iou": 69.18742773047408,
+            "dice": 81.7879066530805,
+            "gt_pixels": 46964,
+            "pred_pixels": 33510
+          }
+        },
+        "mean_iou": 66.3783602864621,
+        "mean_dice": 77.58520275781085,
+        "tissue_mean_iou": 53.68304256274975,
+        "tissue_mean_dice": 68.52387687246109,
+        "mean_iou_present_classes": 66.3783602864621,
+        "binary_wound_dice": 82.86271567891973,
+        "binary_wound_iou": 70.73982990060456,
+        "unmapped_pixels": 9168,
+        "total_pixels": 249573
+      },
+      "confusion": [
+        [
+          191019,
+          1545,
+          283,
+          5813
+        ],
+        [
+          442,
+          2855,
+          318,
+          334
+        ],
+        [
+          9050,
+          1984,
+          32909,
+          3021
+        ]
+      ]
+    },
+    "callus_ignore|lenient": {
+      "gt_policy": "callus_ignore",
+      "pred_policy": "lenient",
+      "metrics": {
+        "classes": {
+          "background": {
+            "iou": 93.06169535760046,
+            "dice": 96.40617232250655,
+            "gt_pixels": 198660,
+            "pred_pixels": 209679
+          },
+          "fibrin/slough": {
+            "iou": 38.178657395025404,
+            "dice": 55.25984709184167,
+            "gt_pixels": 3949,
+            "pred_pixels": 6384
+          },
+          "granulation": {
+            "iou": 69.18742773047408,
+            "dice": 81.7879066530805,
+            "gt_pixels": 46964,
+            "pred_pixels": 33510
+          }
+        },
+        "mean_iou": 66.80926016103331,
+        "mean_dice": 77.81797535580957,
+        "tissue_mean_iou": 53.68304256274975,
+        "tissue_mean_dice": 68.52387687246109,
+        "mean_iou_present_classes": 66.80926016103331,
+        "binary_wound_dice": 83.83935159183763,
+        "binary_wound_iou": 72.17534745264594,
+        "unmapped_pixels": 0,
+        "total_pixels": 249573
+      },
+      "confusion": [
+        [
+          196832,
+          1545,
+          283,
+          0
+        ],
+        [
+          776,
+          2855,
+          318,
+          0
+        ],
+        [
+          12071,
+          1984,
+          32909,
+          0
+        ]
+      ]
+    },
+    "callus_background|strict": {
+      "gt_policy": "callus_background",
+      "pred_policy": "strict",
+      "metrics": {
+        "classes": {
+          "background": {
+            "iou": 89.0040330324563,
+            "dice": 94.18215220536833,
+            "gt_pixels": 250858,
+            "pred_pixels": 241214
+          },
+          "fibrin/slough": {
+            "iou": 25.20971302428256,
+            "dice": 40.267983074753175,
+            "gt_pixels": 3949,
+            "pred_pixels": 10231
+          },
+          "granulation": {
+            "iou": 68.27310070121571,
+            "dice": 81.1455906103981,
+            "gt_pixels": 46964,
+            "pred_pixels": 34147
+          }
+        },
+        "mean_iou": 60.8289489193182,
+        "mean_dice": 71.86524196350653,
+        "tissue_mean_iou": 46.74140686274914,
+        "tissue_mean_dice": 60.70678684257564,
+        "mean_iou_present_classes": 60.8289489193182,
+        "binary_wound_dice": 74.31775365569212,
+        "binary_wound_iou": 59.13146511727505,
+        "unmapped_pixels": 16179,
+        "total_pixels": 301771
+      },
+      "confusion": [
+        [
+          231722,
+          5392,
+          920,
+          12824
+        ],
+        [
+          442,
+          2855,
+          318,
+          334
+        ],
+        [
+          9050,
+          1984,
+          32909,
+          3021
+        ]
+      ]
+    },
+    "callus_background|lenient": {
+      "gt_policy": "callus_background",
+      "pred_policy": "lenient",
+      "metrics": {
+        "classes": {
+          "background": {
+            "iou": 92.73468459073587,
+            "dice": 96.2304058427824,
+            "gt_pixels": 250858,
+            "pred_pixels": 257393
+          },
+          "fibrin/slough": {
+            "iou": 25.20971302428256,
+            "dice": 40.267983074753175,
+            "gt_pixels": 3949,
+            "pred_pixels": 10231
+          },
+          "granulation": {
+            "iou": 68.27310070121571,
+            "dice": 81.1455906103981,
+            "gt_pixels": 46964,
+            "pred_pixels": 34147
+          }
+        },
+        "mean_iou": 62.07249943874471,
+        "mean_dice": 72.5479931759779,
+        "tissue_mean_iou": 46.74140686274914,
+        "tissue_mean_dice": 60.70678684257564,
+        "mean_iou_present_classes": 62.07249943874471,
+        "binary_wound_dice": 79.894218761478,
+        "binary_wound_iou": 66.51987767584097,
+        "unmapped_pixels": 0,
+        "total_pixels": 301771
+      },
+      "confusion": [
+        [
+          244546,
+          5392,
+          920,
+          0
+        ],
+        [
+          776,
+          2855,
+          318,
+          0
+        ],
+        [
+          12071,
+          1984,
+          32909,
+          0
+        ]
+      ]
+    }
+  },
+  "images": 16,
+  "extra": {
+    "checkpoint": "checkpoints/best_model_resnet34_weighted.pth",
+    "device": "cpu",
+    "size": 256,
+    "seconds": 0.9
+  },
+  "limitations": [
+    "Zero-shot: the model was trained on LUTSeg only; the label sets differ, so numbers depend on the class mapping and are NOT comparable with models trained on this dataset.",
+    "Research prototype; not clinically validated."
+  ]
+}

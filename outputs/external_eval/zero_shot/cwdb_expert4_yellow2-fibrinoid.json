@@ -1,0 +1,228 @@
+{
+  "name": "cwdb_expert4_yellow2-fibrinoid",
+  "label_space": "cwdb_common4",
+  "common_classes": [
+    "background",
+    "slough/fibrinoid",
+    "granulation",
+    "necrotic"
+  ],
+  "notes": [
+    "Slough is assumed to correspond to ComplexWoundDB 'fibrinoid'; Necrotic to 'dry necrosis'.",
+    "Hematoma pixels are ignored. Epithelial / Other have no counterpart."
+  ],
+  "native_confusion": [
+    [
+      11649367,
+      126525,
+      99792,
+      58025,
+      41108,
+      0
+    ],
+    [
+      94777,
+      14461,
+      42587,
+      86451,
+      159695,
+      0
+    ],
+    [
+      140468,
+      15456,
+      150801,
+      30384,
+      73659,
+      0
+    ],
+    [
+      155673,
+      6,
+      1507,
+      18,
+      9750,
+      0
+    ],
+    [
+      2401,
+      5,
+      520,
+      4118,
+      18529,
+      0
+    ]
+  ],
+  "native_gt_classes": [
+    "background",
+    "granulation",
+    "fibrinoid",
+    "necrosis",
+    "hematoma"
+  ],
+  "native_pred_classes": [
+    "Background",
+    "Epithelial",
+    "Slough",
+    "Granulation",
+    "Necrotic",
+    "Other"
+  ],
+  "variants": {
+    "default|strict": {
+      "gt_policy": "default",
+      "pred_policy": "strict",
+      "metrics": {
+        "classes": {
+          "background": {
+            "iou": 94.20683040676514,
+            "dice": 97.017010379552,
+            "gt_pixels": 11974817,
+            "pred_pixels": 12040285
+          },
+          "slough/fibrinoid": {
+            "iou": 27.18830117514703,
+            "dice": 42.752833277813615,
+            "gt_pixels": 410768,
+            "pred_pixels": 294687
+          },
+          "granulation": {
+            "iou": 17.773716174819796,
+            "dice": 30.182823047609403,
+            "gt_pixels": 397971,
+            "pred_pixels": 174878
+          },
+          "necrotic": {
+            "iou": 2.2088007684361237,
+            "dice": 4.322134203375255,
+            "gt_pixels": 166954,
+            "pred_pixels": 284212
+          }
+        },
+        "mean_iou": 35.344412131292025,
+        "mean_dice": 43.56870022708756,
+        "tissue_mean_iou": 15.723606039467649,
+        "tissue_mean_dice": 25.75259684293276,
+        "mean_iou_present_classes": 35.344412131292025,
+        "binary_wound_dice": 62.01489142157824,
+        "binary_wound_iou": 44.94317688370917,
+        "unmapped_pixels": 156448,
+        "total_pixels": 12950510
+      },
+      "confusion": [
+        [
+          11649367,
+          99792,
+          58025,
+          41108,
+          126525
+        ],
+        [
+          140468,
+          150801,
+          30384,
+          73659,
+          15456
+        ],
+        [
+          94777,
+          42587,
+          86451,
+          159695,
+          14461
+        ],
+        [
+          155673,
+          1507,
+          18,
+          9750,
+          6
+        ]
+      ]
+    },
+    "default|lenient": {
+      "gt_policy": "default",
+      "pred_policy": "lenient",
+      "metrics": {
+        "classes": {
+          "background": {
+            "iou": 95.00013633806289,
+            "dice": 97.43596914554507,
+            "gt_pixels": 11974817,
+            "pred_pixels": 12196733
+          },
+          "slough/fibrinoid": {
+            "iou": 27.18830117514703,
+            "dice": 42.752833277813615,
+            "gt_pixels": 410768,
+            "pred_pixels": 294687
+          },
+          "granulation": {
+            "iou": 17.773716174819796,
+            "dice": 30.182823047609403,
+            "gt_pixels": 397971,
+            "pred_pixels": 174878
+          },
+          "necrotic": {
+            "iou": 2.2088007684361237,
+            "dice": 4.322134203375255,
+            "gt_pixels": 166954,
+            "pred_pixels": 284212
+          }
+        },
+        "mean_iou": 35.542738614116466,
+        "mean_dice": 43.67343991858583,
+        "tissue_mean_iou": 15.723606039467649,
+        "tissue_mean_dice": 25.75259684293276,
+        "mean_iou_present_classes": 35.542738614116466,
+        "binary_wound_dice": 64.16439718526486,
+        "binary_wound_iou": 47.23680379493588,
+        "unmapped_pixels": 0,
+        "total_pixels": 12950510
+      },
+      "confusion": [
+        [
+          11775892,
+          99792,
+          58025,
+          41108,
+          0
+        ],
+        [
+          155924,
+          150801,
+          30384,
+          73659,
+          0
+        ],
+        [
+          109238,
+          42587,
+          86451,
+          159695,
+          0
+        ],
+        [
+          155679,
+          1507,
+          18,
+          9750,
+          0
+        ]
+      ]
+    }
+  },
+  "images": 27,
+  "extra": {
+    "checkpoint": "checkpoints/best_model_resnet34_weighted.pth",
+    "device": "cpu",
+    "size": 256,
+    "yellow2": "fibrinoid",
+    "expert": 4,
+    "seconds": 7.6
+  },
+  "limitations": [
+    "Zero-shot: the model was trained on LUTSeg only; the label sets differ, so numbers depend on the class mapping and are NOT comparable with models trained on this dataset.",
+    "Research prototype; not clinically validated."
+  ]
+}

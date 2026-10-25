@@ -1,0 +1,6 @@
+,pred_Background,pred_Epithelial,pred_Slough,pred_Granulation,pred_Necrotic,pred_Other
+gt_background,11649367,126525,99792,58025,41108,0
+gt_granulation,94777,14461,42587,86451,159695,0
+gt_fibrinoid,140468,15456,150801,30384,73659,0
+gt_necrosis,155673,6,1507,18,9750,0
+gt_hematoma,2401,5,520,4118,18529,0

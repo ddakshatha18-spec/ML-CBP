@@ -1,0 +1,1759 @@
+=== GIT STATUS ===
+## person-2/trajectory-model...origin/person-2/trajectory-model
+?? p3_project_inspection.txt
+=== ROOT README ===
+=== REQUIREMENTS ===
+=== DATASET SCRIPT ===
+from pathlib import Path
+
+import numpy as np
+import torch
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision.transforms import functional as TF
+from torchvision.transforms import InterpolationMode
+import random
+
+
+class LUTSegDataset(Dataset):
+
+    def __init__(
+        self,
+        root_dir,
+        split="train",
+        image_size=(256, 256),
+        augment=False
+    ):
+        self.root_dir = Path(root_dir)
+        self.image_size = image_size
+        self.augment = augment
+
+        split_file = self.root_dir / f"{split}.txt"
+
+        if not split_file.exists():
+            raise FileNotFoundError(
+                f"Split file not found: {split_file}"
+            )
+
+        self.samples = []
+
+        for line in split_file.read_text().splitlines():
+
+            line = line.strip()
+
+            if not line:
+                continue
+
+            image_path, mask_path = line.split()
+
+            self.samples.append(
+                (
+                    self.root_dir / image_path,
+                    self.root_dir / mask_path,
+                )
+            )
+
+        if not self.samples:
+            raise ValueError(
+                f"No samples found in {split_file}"
+            )
+
+        print(f"{split}: {len(self.samples)} samples")
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, index):
+
+        image_path, mask_path = self.samples[index]
+
+        image = Image.open(
+            image_path
+        ).convert("RGB")
+
+        mask = Image.open(
+            mask_path
+        ).convert("L")
+
+        # -----------------------------
+        # Resize
+        # -----------------------------
+
+        image = TF.resize(
+            image,
+            self.image_size,
+            interpolation=InterpolationMode.BILINEAR
+        )
+
+        mask = TF.resize(
+            mask,
+            self.image_size,
+            interpolation=InterpolationMode.NEAREST
+        )
+
+        # -----------------------------
+        # Data augmentation
+        # -----------------------------
+
+        if self.augment:
+
+            # Horizontal flip
+            if random.random() < 0.5:
+                image = TF.hflip(image)
+                mask = TF.hflip(mask)
+
+            # Vertical flip
+            if random.random() < 0.2:
+                image = TF.vflip(image)
+                mask = TF.vflip(mask)
+
+            # Small rotation
+            if random.random() < 0.5:
+
+                angle = random.uniform(-15, 15)
+
+                image = TF.rotate(
+                    image,
+                    angle,
+                    interpolation=InterpolationMode.BILINEAR,
+                    fill=0
+                )
+
+                mask = TF.rotate(
+                    mask,
+                    angle,
+                    interpolation=InterpolationMode.NEAREST,
+                    fill=255
+                )
+
+            # Brightness/contrast changes
+            if random.random() < 0.5:
+
+                brightness_factor = random.uniform(
+                    0.9,
+                    1.1
+                )
+
+                contrast_factor = random.uniform(
+                    0.9,
+                    1.1
+                )
+
+                image = TF.adjust_brightness(
+                    image,
+                    brightness_factor
+                )
+
+                image = TF.adjust_contrast(
+                    image,
+                    contrast_factor
+                )
+
+        # -----------------------------
+        # Convert image
+        # -----------------------------
+
+        image = TF.to_tensor(image)
+
+        image = TF.normalize(
+            image,
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
+
+        # -----------------------------
+        # Convert mask
+        # -----------------------------
+
+        mask = torch.from_numpy(
+            np.array(mask)
+        ).long()
+
+        return image, mask=== TRAINING SCRIPT ===
+import os
+
+import torch
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+from dataset import LUTSegDataset
+from model import UNet
+from losses import CombinedLoss
+from metrics import dice_score, iou_score
+
+
+# --------------------------------------------------
+# Configuration
+# --------------------------------------------------
+
+DATASET_ROOT = "data/LUTSeg"
+CHECKPOINT_DIR = "checkpoints"
+
+IMAGE_SIZE = (384, 384)
+BATCH_SIZE = 2
+EPOCHS = 30
+LEARNING_RATE = 1e-3
+
+NUM_CLASSES = 6
+
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+
+# --------------------------------------------------
+# Dataset
+# --------------------------------------------------
+
+train_dataset = LUTSegDataset(
+    DATASET_ROOT,
+    split="train",
+    image_size=IMAGE_SIZE,
+    augment=True
+)
+
+val_dataset = LUTSegDataset(
+    DATASET_ROOT,
+    split="val",
+    image_size=IMAGE_SIZE
+)
+
+
+# --------------------------------------------------
+# DataLoaders
+# --------------------------------------------------
+
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=0
+)
+
+val_loader = DataLoader(
+    val_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    num_workers=0
+)
+
+
+# --------------------------------------------------
+# Model
+# --------------------------------------------------
+
+model = UNet(
+    in_channels=3,
+    num_classes=NUM_CLASSES
+).to(DEVICE)
+
+
+# --------------------------------------------------
+# Loss and optimizer
+# --------------------------------------------------
+
+criterion = CombinedLoss(
+    num_classes=NUM_CLASSES
+)
+
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=LEARNING_RATE
+)
+
+
+# --------------------------------------------------
+# Training
+# --------------------------------------------------
+
+best_dice = 0.0
+
+print("\n========================================")
+print("Starting training")
+print("========================================")
+print(f"Device: {DEVICE}")
+print(f"Training samples: {len(train_dataset)}")
+print(f"Validation samples: {len(val_dataset)}")
+print(f"Batch size: {BATCH_SIZE}")
+print(f"Epochs: {EPOCHS}")
+print("========================================\n")
+
+
+for epoch in range(EPOCHS):
+
+    # ------------------------------
+    # Training
+    # ------------------------------
+
+    model.train()
+
+    train_loss = 0.0
+
+    train_progress = tqdm(
+        train_loader,
+        desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]"
+    )
+
+    for images, masks in train_progress:
+
+        images = images.to(DEVICE)
+        masks = masks.to(DEVICE)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+
+        loss = criterion(outputs, masks)
+
+        loss.backward()
+
+        optimizer.step()
+
+        train_loss += loss.item()
+
+        train_progress.set_postfix(
+            loss=f"{loss.item():.4f}"
+        )
+
+    train_loss /= len(train_loader)
+
+
+    # ------------------------------
+    # Validation
+    # ------------------------------
+
+    model.eval()
+
+    val_loss = 0.0
+    val_dice = 0.0
+    val_iou = 0.0
+
+    with torch.no_grad():
+
+        for images, masks in val_loader:
+
+            images = images.to(DEVICE)
+            masks = masks.to(DEVICE)
+
+            outputs = model(images)
+
+            loss = criterion(outputs, masks)
+
+            val_loss += loss.item()
+
+            val_dice += dice_score(
+                outputs,
+                masks,
+                num_classes=NUM_CLASSES
+            )
+
+            val_iou += iou_score(
+                outputs,
+                masks,
+                num_classes=NUM_CLASSES
+            )
+
+    val_loss /= len(val_loader)
+    val_dice /= len(val_loader)
+    val_iou /= len(val_loader)
+
+
+    # ------------------------------
+    # Print results
+    # ------------------------------
+
+    print()
+    print("----------------------------------------")
+    print(f"Epoch {epoch + 1}/{EPOCHS}")
+    print(f"Train Loss : {train_loss:.4f}")
+    print(f"Val Loss   : {val_loss:.4f}")
+    print(f"Val Dice   : {val_dice:.4f}")
+    print(f"Val IoU    : {val_iou:.4f}")
+    print("----------------------------------------")
+
+
+    # ------------------------------
+    # Save best model
+    # ------------------------------
+
+    if val_dice > best_dice:
+
+        best_dice = val_dice
+
+        checkpoint_path = os.path.join(
+            CHECKPOINT_DIR,
+            "best_model.pth"
+        )
+
+        torch.save(
+            {
+                "epoch": epoch + 1,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "val_dice": val_dice,
+                "val_iou": val_iou,
+            },
+            checkpoint_path
+        )
+
+        print(
+            f"✓ New best model saved! "
+            f"Dice: {best_dice:.4f}"
+        )
+
+
+print("\n========================================")
+print("Training complete!")
+print(f"Best validation Dice: {best_dice:.4f}")
+print("========================================")=== MODEL SCRIPT ===
+import torch
+import torch.nn as nn
+
+
+class DoubleConv(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+
+        self.block = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, 3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(out_channels, out_channels, 3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        return self.block(x)
+
+
+class UNet(nn.Module):
+    def __init__(self, in_channels=3, num_classes=6):
+        super().__init__()
+
+        self.enc1 = DoubleConv(in_channels, 32)
+        self.enc2 = DoubleConv(32, 64)
+        self.enc3 = DoubleConv(64, 128)
+        self.enc4 = DoubleConv(128, 256)
+
+        self.pool = nn.MaxPool2d(2)
+
+        self.bottleneck = DoubleConv(256, 512)
+
+        self.up4 = nn.ConvTranspose2d(512, 256, 2, 2)
+        self.dec4 = DoubleConv(512, 256)
+
+        self.up3 = nn.ConvTranspose2d(256, 128, 2, 2)
+        self.dec3 = DoubleConv(256, 128)
+
+        self.up2 = nn.ConvTranspose2d(128, 64, 2, 2)
+        self.dec2 = DoubleConv(128, 64)
+
+        self.up1 = nn.ConvTranspose2d(64, 32, 2, 2)
+        self.dec1 = DoubleConv(64, 32)
+
+        self.output = nn.Conv2d(32, num_classes, 1)
+
+    def forward(self, x):
+        e1 = self.enc1(x)
+        e2 = self.enc2(self.pool(e1))
+        e3 = self.enc3(self.pool(e2))
+        e4 = self.enc4(self.pool(e3))
+
+        b = self.bottleneck(self.pool(e4))
+
+        d4 = self.up4(b)
+        d4 = torch.cat([d4, e4], dim=1)
+        d4 = self.dec4(d4)
+
+        d3 = self.up3(d4)
+        d3 = torch.cat([d3, e3], dim=1)
+        d3 = self.dec3(d3)
+
+        d2 = self.up2(d3)
+        d2 = torch.cat([d2, e2], dim=1)
+        d2 = self.dec2(d2)
+
+        d1 = self.up1(d2)
+        d1 = torch.cat([d1, e1], dim=1)
+        d1 = self.dec1(d1)
+
+        return self.output(d1)=== METRICS SCRIPT ===
+import torch
+
+
+def dice_score(logits, targets, num_classes=6, ignore_index=255):
+    predictions = torch.argmax(logits, dim=1)
+
+    scores = []
+
+    for class_id in range(num_classes):
+
+        valid = targets != ignore_index
+
+        pred_class = (predictions == class_id) & valid
+        target_class = (targets == class_id) & valid
+
+        intersection = (pred_class & target_class).sum().float()
+
+        denominator = (
+            pred_class.sum().float()
+            + target_class.sum().float()
+        )
+
+        if denominator == 0:
+            continue
+
+        dice = (2 * intersection) / (denominator + 1e-6)
+
+        scores.append(dice.item())
+
+    if not scores:
+        return 0.0
+
+    return sum(scores) / len(scores)
+
+
+def iou_score(logits, targets, num_classes=6, ignore_index=255):
+    predictions = torch.argmax(logits, dim=1)
+
+    scores = []
+
+    for class_id in range(num_classes):
+
+        valid = targets != ignore_index
+
+        pred_class = (predictions == class_id) & valid
+        target_class = (targets == class_id) & valid
+
+        intersection = (pred_class & target_class).sum().float()
+
+        union = (
+            pred_class.sum().float()
+            + target_class.sum().float()
+            - intersection
+        )
+
+        if union == 0:
+            continue
+
+        iou = intersection / (union + 1e-6)
+
+        scores.append(iou.item())
+
+    if not scores:
+        return 0.0
+
+    return sum(scores) / len(scores)=== EVALUATION SCRIPT ===
+import torch
+from torch.utils.data import DataLoader
+
+from dataset import LUTSegDataset
+from model import UNet
+
+
+DATASET_ROOT = "data/LUTSeg"
+CHECKPOINT = "checkpoints/best_model.pth"
+
+IMAGE_SIZE = (256, 256)
+BATCH_SIZE = 2
+NUM_CLASSES = 6
+
+CLASS_NAMES = [
+    "Background",
+    "Epithelial",
+    "Slough",
+    "Granulation",
+    "Necrotic",
+    "Other",
+]
+
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+
+# -----------------------------
+# Dataset
+# -----------------------------
+
+dataset = LUTSegDataset(
+    DATASET_ROOT,
+    split="val",
+    image_size=IMAGE_SIZE
+)
+
+loader = DataLoader(
+    dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    num_workers=0
+)
+
+
+# -----------------------------
+# Model
+# -----------------------------
+
+model = UNet(
+    in_channels=3,
+    num_classes=NUM_CLASSES
+).to(DEVICE)
+
+checkpoint = torch.load(
+    CHECKPOINT,
+    map_location=DEVICE
+)
+
+model.load_state_dict(
+    checkpoint["model_state_dict"]
+)
+
+model.eval()
+
+print("\n========================================")
+print("Model Evaluation")
+print("========================================")
+print(f"Device: {DEVICE}")
+print(f"Validation images: {len(dataset)}")
+print("========================================\n")
+
+
+# -----------------------------
+# Accumulate confusion matrix
+# -----------------------------
+
+confusion_matrix = torch.zeros(
+    NUM_CLASSES,
+    NUM_CLASSES,
+    dtype=torch.long
+)
+
+with torch.no_grad():
+
+    for images, masks in loader:
+
+        images = images.to(DEVICE)
+        masks = masks.to(DEVICE)
+
+        outputs = model(images)
+
+        predictions = torch.argmax(
+            outputs,
+            dim=1
+        )
+
+        valid = masks != 255
+
+        true_pixels = masks[valid].cpu()
+        pred_pixels = predictions[valid].cpu()
+
+        for true_class, pred_class in zip(
+            true_pixels,
+            pred_pixels
+        ):
+            confusion_matrix[
+                true_class,
+                pred_class
+            ] += 1
+
+
+# -----------------------------
+# Calculate per-class metrics
+# -----------------------------
+
+print("Per-class results:\n")
+
+dice_scores = []
+iou_scores = []
+
+for class_id in range(NUM_CLASSES):
+
+    true_positive = confusion_matrix[
+        class_id,
+        class_id
+    ].item()
+
+    false_positive = (
+        confusion_matrix[:, class_id].sum().item()
+        - true_positive
+    )
+
+    false_negative = (
+        confusion_matrix[class_id, :].sum().item()
+        - true_positive
+    )
+
+    denominator_dice = (
+        2 * true_positive
+        + false_positive
+        + false_negative
+    )
+
+    denominator_iou = (
+        true_positive
+        + false_positive
+        + false_negative
+    )
+
+    if denominator_dice == 0:
+        dice = 0.0
+    else:
+        dice = (
+            2 * true_positive
+            / denominator_dice
+        )
+
+    if denominator_iou == 0:
+        iou = 0.0
+    else:
+        iou = (
+            true_positive
+            / denominator_iou
+        )
+
+    dice_scores.append(dice)
+    iou_scores.append(iou)
+
+    print(
+        f"{CLASS_NAMES[class_id]:<15} "
+        f"Dice: {dice:.4f}   "
+        f"IoU: {iou:.4f}"
+    )
+
+
+# -----------------------------
+# Overall metrics
+# -----------------------------
+
+mean_dice = sum(dice_scores) / NUM_CLASSES
+mean_iou = sum(iou_scores) / NUM_CLASSES
+
+print("\n========================================")
+print("Overall Results")
+print("========================================")
+
+print(f"Mean Dice: {mean_dice:.4f}")
+print(f"Mean IoU : {mean_iou:.4f}")
+
+print("\nConfusion Matrix:")
+print(confusion_matrix)
+
+print("\nEvaluation complete!")=== BINARY EVALUATION ===
+import torch
+from torch.utils.data import DataLoader
+
+from dataset import LUTSegDataset
+from model import UNet
+
+
+DATASET_ROOT = "data/LUTSeg"
+CHECKPOINT = "checkpoints/best_model.pth"
+
+IMAGE_SIZE = (384, 384)
+BATCH_SIZE = 2
+NUM_CLASSES = 6
+
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+
+dataset = LUTSegDataset(
+    DATASET_ROOT,
+    split="val",
+    image_size=IMAGE_SIZE
+)
+
+loader = DataLoader(
+    dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    num_workers=0
+)
+
+model = UNet(
+    in_channels=3,
+    num_classes=NUM_CLASSES
+).to(DEVICE)
+
+checkpoint = torch.load(
+    CHECKPOINT,
+    map_location=DEVICE
+)
+
+model.load_state_dict(
+    checkpoint["model_state_dict"]
+)
+
+model.eval()
+
+intersection = 0
+predicted_pixels = 0
+target_pixels = 0
+
+with torch.no_grad():
+
+    for images, masks in loader:
+
+        images = images.to(DEVICE)
+        masks = masks.to(DEVICE)
+
+        outputs = model(images)
+
+        predictions = torch.argmax(
+            outputs,
+            dim=1
+        )
+
+        valid = masks != 255
+
+        # Classes 1-5 = wound
+        target_wound = (masks > 0) & valid
+        predicted_wound = (predictions > 0) & valid
+
+        intersection += (
+            target_wound & predicted_wound
+        ).sum().item()
+
+        predicted_pixels += (
+            predicted_wound
+        ).sum().item()
+
+        target_pixels += (
+            target_wound
+        ).sum().item()
+
+
+dice = (
+    2 * intersection
+    / (predicted_pixels + target_pixels + 1e-6)
+)
+
+iou = (
+    intersection
+    / (
+        predicted_pixels
+        + target_pixels
+        - intersection
+        + 1e-6
+    )
+)
+
+print("\n========================================")
+print("Binary Wound Segmentation Evaluation")
+print("========================================")
+print(f"Device: {DEVICE}")
+print(f"Validation images: {len(dataset)}")
+print("----------------------------------------")
+print(f"Wound Dice: {dice:.4f}")
+print(f"Wound IoU : {iou:.4f}")
+print("========================================")=== FINAL EVALUATION ===
+import os
+import json
+import numpy as np
+import torch
+from torch.utils.data import DataLoader
+
+from dataset import LUTSegDataset
+from model import UNet
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+DATASET_ROOT = "data/LUTSeg"
+CHECKPOINT = "checkpoints/best_model.pth"
+OUTPUT_DIR = "outputs/final_evaluation"
+
+IMAGE_SIZE = (256, 256)
+BATCH_SIZE = 2
+NUM_CLASSES = 6
+
+CLASS_NAMES = [
+    "Background",
+    "Epithelial",
+    "Slough",
+    "Granulation",
+    "Necrotic",
+    "Other"
+]
+
+IGNORE_INDEX = 255
+
+
+# ============================================================
+# SETUP
+# ============================================================
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print("=" * 60)
+print("FINAL WOUND SEGMENTATION EVALUATION")
+print("=" * 60)
+print(f"Device: {device}")
+print()
+
+
+# ============================================================
+# LOAD DATASET
+# ============================================================
+
+val_dataset = LUTSegDataset(
+    root_dir=DATASET_ROOT,
+    split="val",
+    image_size=IMAGE_SIZE,
+    augment=False
+)
+
+val_loader = DataLoader(
+    val_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    num_workers=0
+)
+
+print(f"Validation images: {len(val_dataset)}")
+
+
+# ============================================================
+# LOAD MODEL
+# ============================================================
+
+model = UNet(
+    in_channels=3,
+    num_classes=NUM_CLASSES
+)
+
+checkpoint = torch.load(
+    CHECKPOINT,
+    map_location=device
+)
+
+# Handle both normal state_dict and checkpoint dictionaries
+if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+    model.load_state_dict(checkpoint["model_state_dict"])
+else:
+    model.load_state_dict(checkpoint)
+
+model.to(device)
+model.eval()
+
+print("Model loaded.")
+print()
+
+
+# ============================================================
+# STORAGE
+# ============================================================
+
+confusion_matrix = np.zeros(
+    (NUM_CLASSES, NUM_CLASSES),
+    dtype=np.int64
+)
+
+# Binary wound statistics
+binary_intersection = 0
+binary_prediction = 0
+binary_target = 0
+
+# Batch statistics
+wound_area_percentages = []
+
+tissue_percentages = {
+    "Epithelial": [],
+    "Slough": [],
+    "Granulation": [],
+    "Necrotic": [],
+    "Other": []
+}
+
+
+# ============================================================
+# EVALUATION
+# ============================================================
+
+with torch.no_grad():
+
+    for batch_idx, (images, targets) in enumerate(val_loader):
+
+        images = images.to(device)
+        targets = targets.to(device)
+
+        outputs = model(images)
+        predictions = torch.argmax(outputs, dim=1)
+
+        # ----------------------------------------------------
+        # Process each image individually
+        # ----------------------------------------------------
+
+        for i in range(images.shape[0]):
+
+            pred = predictions[i]
+            target = targets[i]
+
+            # Valid pixels
+            valid = target != IGNORE_INDEX
+
+            pred_valid = pred[valid]
+            target_valid = target[valid]
+
+            # ------------------------------------------------
+            # Multi-class confusion matrix
+            # ------------------------------------------------
+
+            for true_class in range(NUM_CLASSES):
+
+                true_pixels = target_valid == true_class
+
+                if true_pixels.sum() == 0:
+                    continue
+
+                predicted_for_class = pred_valid[true_pixels]
+
+                for predicted_class in range(NUM_CLASSES):
+
+                    count = (
+                        predicted_for_class == predicted_class
+                    ).sum().item()
+
+                    confusion_matrix[
+                        true_class,
+                        predicted_class
+                    ] += count
+
+            # ------------------------------------------------
+            # Binary wound segmentation
+            #
+            # Classes 1-5 = wound
+            # Class 0 = background
+            # ------------------------------------------------
+
+            predicted_wound = pred > 0
+            target_wound = target > 0
+
+            predicted_wound = predicted_wound & valid
+            target_wound = target_wound & valid
+
+            intersection = (
+                predicted_wound & target_wound
+            ).sum().item()
+
+            binary_intersection += intersection
+            binary_prediction += predicted_wound.sum().item()
+            binary_target += target_wound.sum().item()
+
+            # ------------------------------------------------
+            # Wound area percentage
+            # ------------------------------------------------
+
+            valid_pixel_count = valid.sum().item()
+
+            if valid_pixel_count > 0:
+
+                wound_pixels = predicted_wound.sum().item()
+
+                wound_percentage = (
+                    wound_pixels /
+                    valid_pixel_count
+                ) * 100
+
+                wound_area_percentages.append(
+                    wound_percentage
+                )
+
+                # --------------------------------------------
+                # Tissue percentages inside predicted wound
+                # --------------------------------------------
+
+                for class_id, class_name in zip(
+                    range(1, NUM_CLASSES),
+                    CLASS_NAMES[1:]
+                ):
+
+                    class_pixels = (
+                        (pred == class_id) &
+                        predicted_wound
+                    ).sum().item()
+
+                    if wound_pixels > 0:
+                        percentage = (
+                            class_pixels /
+                            wound_pixels
+                        ) * 100
+                    else:
+                        percentage = 0.0
+
+                    tissue_percentages[class_name].append(
+                        percentage
+                    )
+
+        print(
+            f"Processed: "
+            f"{min((batch_idx + 1) * BATCH_SIZE, len(val_dataset))}"
+            f"/{len(val_dataset)}"
+        )
+
+
+# ============================================================
+# BINARY WOUND METRICS
+# ============================================================
+
+dice_denominator = (
+    binary_prediction +
+    binary_target
+)
+
+iou_denominator = (
+    binary_prediction +
+    binary_target -
+    binary_intersection
+)
+
+if dice_denominator > 0:
+    wound_dice = (
+        2 * binary_intersection
+    ) / dice_denominator
+else:
+    wound_dice = 0.0
+
+if iou_denominator > 0:
+    wound_iou = (
+        binary_intersection /
+        iou_denominator
+    )
+else:
+    wound_iou = 0.0
+
+
+# ============================================================
+# PER-CLASS DICE AND IOU
+# ============================================================
+
+class_metrics = {}
+
+dice_values = []
+iou_values = []
+
+for class_id, class_name in enumerate(CLASS_NAMES):
+
+    true_positive = confusion_matrix[
+        class_id,
+        class_id
+    ]
+
+    false_positive = (
+        confusion_matrix[:, class_id].sum()
+        - true_positive
+    )
+
+    false_negative = (
+        confusion_matrix[class_id, :].sum()
+        - true_positive
+    )
+
+    dice_denominator = (
+        2 * true_positive
+        + false_positive
+        + false_negative
+    )
+
+    iou_denominator = (
+        true_positive
+        + false_positive
+        + false_negative
+    )
+
+    if dice_denominator > 0:
+        dice = (
+            2 * true_positive
+        ) / dice_denominator
+    else:
+        dice = 0.0
+
+    if iou_denominator > 0:
+        iou = (
+            true_positive /
+            iou_denominator
+        )
+    else:
+        iou = 0.0
+
+    class_metrics[class_name] = {
+        "dice": float(dice),
+        "iou": float(iou)
+    }
+
+    dice_values.append(dice)
+    iou_values.append(iou)
+
+
+mean_dice = np.mean(dice_values)
+mean_iou = np.mean(iou_values)
+
+
+# ============================================================
+# BATCH STATISTICS
+# ============================================================
+
+average_wound_area = np.mean(
+    wound_area_percentages
+)
+
+average_tissue_percentages = {}
+
+for class_name, values in tissue_percentages.items():
+
+    average_tissue_percentages[class_name] = (
+        float(np.mean(values))
+        if values
+        else 0.0
+    )
+
+
+# ============================================================
+# PRINT FINAL RESULTS
+# ============================================================
+
+print()
+print("=" * 60)
+print("FINAL RESULTS")
+print("=" * 60)
+
+print()
+print("OVERALL WOUND SEGMENTATION")
+print("-" * 40)
+print(f"Wound Dice : {wound_dice:.4f}")
+print(f"Wound IoU  : {wound_iou:.4f}")
+
+print()
+print("SIX-CLASS TISSUE SEGMENTATION")
+print("-" * 40)
+
+for class_name in CLASS_NAMES:
+
+    dice = class_metrics[class_name]["dice"]
+    iou = class_metrics[class_name]["iou"]
+
+    print(
+        f"{class_name:<15} "
+        f"Dice: {dice:.4f}    "
+        f"IoU: {iou:.4f}"
+    )
+
+print()
+print(f"Mean Dice: {mean_dice:.4f}")
+print(f"Mean IoU : {mean_iou:.4f}")
+
+print()
+print("AVERAGE PREDICTED WOUND COMPOSITION")
+print("-" * 40)
+
+print(
+    f"Wound area: "
+    f"{average_wound_area:.2f}%"
+)
+
+for class_name, percentage in average_tissue_percentages.items():
+
+    print(
+        f"{class_name}: "
+        f"{percentage:.2f}%"
+    )
+
+
+# ============================================================
+# PRINT CONFUSION MATRIX
+# ============================================================
+
+print()
+print("CONFUSION MATRIX")
+print("-" * 40)
+
+print("Rows = Ground Truth")
+print("Columns = Prediction")
+print()
+
+print(
+    f"{'':15}",
+    end=""
+)
+
+for class_name in CLASS_NAMES:
+    print(
+        f"{class_name[:10]:>12}",
+        end=""
+    )
+
+print()
+
+for i, class_name in enumerate(CLASS_NAMES):
+
+    print(
+        f"{class_name[:15]:15}",
+        end=""
+    )
+
+    for j in range(NUM_CLASSES):
+
+        print(
+            f"{confusion_matrix[i, j]:>12}",
+            end=""
+        )
+
+    print()
+
+
+# ============================================================
+# SAVE JSON REPORT
+# ============================================================
+
+report = {
+    "model": {
+        "architecture": "U-Net",
+        "checkpoint": CHECKPOINT,
+        "image_size": list(IMAGE_SIZE),
+        "num_classes": NUM_CLASSES
+    },
+
+    "dataset": {
+        "name": "LUTSeg",
+        "split": "validation",
+        "validation_images": len(val_dataset)
+    },
+
+    "binary_wound_segmentation": {
+        "dice": float(wound_dice),
+        "iou": float(wound_iou)
+    },
+
+    "tissue_segmentation": {
+        "classes": class_metrics,
+        "mean_dice": float(mean_dice),
+        "mean_iou": float(mean_iou)
+    },
+
+    "batch_analysis": {
+        "average_wound_area_percent": float(
+            average_wound_area
+        ),
+        "average_tissue_percentages": (
+            average_tissue_percentages
+        )
+    },
+
+    "confusion_matrix": (
+        confusion_matrix.tolist()
+    ),
+
+    "limitations": [
+        "Evaluation uses 30 validation images.",
+        "Wound area is reported as percentage of image pixels, not physical area in cm2.",
+        "Fine-grained tissue segmentation performs weaker than overall wound localization.",
+        "Results are specific to the LUTSeg validation dataset.",
+        "This evaluation does not constitute clinical validation."
+    ]
+}
+
+report_path = os.path.join(
+    OUTPUT_DIR,
+    "final_evaluation_report.json"
+)
+
+with open(
+    report_path,
+    "w",
+    encoding="utf-8"
+) as f:
+
+    json.dump(
+        report,
+        f,
+        indent=4
+    )
+
+
+# ============================================================
+# SAVE CONFUSION MATRIX
+# ============================================================
+
+confusion_path = os.path.join(
+    OUTPUT_DIR,
+    "confusion_matrix.csv"
+)
+
+with open(
+    confusion_path,
+    "w",
+    encoding="utf-8"
+) as f:
+
+    f.write(
+        ",".join(CLASS_NAMES)
+        + "\n"
+    )
+
+    for row in confusion_matrix:
+
+        f.write(
+            ",".join(
+                str(value)
+                for value in row
+            )
+            + "\n"
+        )
+
+
+# ============================================================
+# SAVE CLASS METRICS CSV
+# ============================================================
+
+metrics_path = os.path.join(
+    OUTPUT_DIR,
+    "class_metrics.csv"
+)
+
+with open(
+    metrics_path,
+    "w",
+    encoding="utf-8"
+) as f:
+
+    f.write("Class,Dice,IoU\n")
+
+    for class_name in CLASS_NAMES:
+
+        dice = class_metrics[class_name]["dice"]
+        iou = class_metrics[class_name]["iou"]
+
+        f.write(
+            f"{class_name},{dice:.6f},{iou:.6f}\n"
+        )
+
+
+# ============================================================
+# DONE
+# ============================================================
+
+print()
+print("=" * 60)
+print("FINAL EVALUATION COMPLETE")
+print("=" * 60)
+
+print()
+print("Generated files:")
+
+print(
+    f"1. {report_path}"
+)
+
+print(
+    f"2. {confusion_path}"
+)
+
+print(
+    f"3. {metrics_path}"
+)
+
+print()=== PREDICTION SCRIPT ===
+import os
+
+import matplotlib.pyplot as plt
+import torch
+
+from dataset import LUTSegDataset
+from model import UNet
+
+
+# -----------------------------
+# Configuration
+# -----------------------------
+
+DATASET_ROOT = "data/LUTSeg"
+CHECKPOINT = "checkpoints/best_model.pth"
+OUTPUT_DIR = "outputs/predictions"
+
+IMAGE_SIZE = (256, 256)
+NUM_CLASSES = 6
+
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+# -----------------------------
+# Load validation dataset
+# -----------------------------
+
+dataset = LUTSegDataset(
+    DATASET_ROOT,
+    split="val",
+    image_size=IMAGE_SIZE
+)
+
+
+# -----------------------------
+# Load model
+# -----------------------------
+
+model = UNet(
+    in_channels=3,
+    num_classes=NUM_CLASSES
+).to(DEVICE)
+
+checkpoint = torch.load(
+    CHECKPOINT,
+    map_location=DEVICE
+)
+
+model.load_state_dict(
+    checkpoint["model_state_dict"]
+)
+
+model.eval()
+
+print(f"Loaded model from: {CHECKPOINT}")
+print(f"Device: {DEVICE}")
+
+
+# -----------------------------
+# Class names
+# -----------------------------
+
+class_names = [
+    "Background",
+    "Epithelial",
+    "Slough",
+    "Granulation",
+    "Necrotic",
+]
+
+
+# -----------------------------
+# Generate predictions
+# -----------------------------
+
+with torch.no_grad():
+
+    for index in range(min(5, len(dataset))):
+
+        image, mask = dataset[index]
+
+        input_image = image.unsqueeze(0).to(DEVICE)
+
+        output = model(input_image)
+
+        prediction = torch.argmax(
+            output,
+            dim=1
+        ).squeeze(0).cpu().numpy()
+
+        # Convert normalized image back for display
+        display_image = image.permute(1, 2, 0).numpy()
+
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
+
+        for channel in range(3):
+            display_image[:, :, channel] = (
+                display_image[:, :, channel] * std[channel]
+                + mean[channel]
+            )
+
+        display_image = display_image.clip(0, 1)
+
+        ground_truth = mask.numpy()
+
+        # -----------------------------
+        # Display
+        # -----------------------------
+
+        plt.figure(figsize=(15, 5))
+
+        plt.subplot(1, 3, 1)
+        plt.imshow(display_image)
+        plt.title("Original Image")
+        plt.axis("off")
+
+        plt.subplot(1, 3, 2)
+        plt.imshow(ground_truth, vmin=0, vmax=5)
+        plt.title("Ground Truth")
+        plt.axis("off")
+
+        plt.subplot(1, 3, 3)
+        plt.imshow(prediction, vmin=0, vmax=5)
+        plt.title("U-Net Prediction")
+        plt.axis("off")
+
+        plt.tight_layout()
+
+        output_path = os.path.join(
+            OUTPUT_DIR,
+            f"prediction_{index + 1}.png"
+        )
+
+        plt.savefig(
+            output_path,
+            dpi=150,
+            bbox_inches="tight"
+        )
+
+        plt.show()
+        plt.close()
+
+        print(
+            f"Saved prediction {index + 1}: {output_path}"
+        )
+
+print("\nPrediction complete!")=== DATASET README ===
+---
+license: cc-by-4.0
+size_categories:
+- n<1K
+task_categories:
+- image-segmentation
+pretty_name: LUTSeg
+tags:
+- medical
+- wound-care
+- semantic-segmentation
+- longitudinal
+- multi-expert
+- leprosy
+- image
+---
+
+# LUTSeg
+
+**LUTSeg: A Longitudinal Multi-Expert Dataset for Ulcer Tissue Segmentation**
+contains pixel-level tissue annotations for longitudinal, leprosy-related chronic
+ulcer images.
+
+- **Paper:** [LUTSeg: A Longitudinal Multi-Expert Dataset for Ulcer Tissue Segmentation](https://huggingface.co/papers/2608.25866)
+- **Code:** [carlosh93/TiSage](https://github.com/carlosh93/TiSage)
+
+The accompanying TiSage paper was selected as a **Spotlight** at the Eleventh
+ISIC Skin Image Analysis Workshop @ MICCAI 2026.
+
+## Dataset Summary
+
+- 141 images from 39 pseudonymized patients
+- 111 training images and 30 validation images, split at the patient level
+- Longitudinal acquisition over 21 months
+- Binary wound masks and six-class tissue masks, including background
+- A 46-image gold-standard subset from 9 patients annotated by five clinicians
+- Per-clinician masks and inter-rater agreement artifacts for the gold subset
+
+LUTSeg reorganizes images collected in the SIMATEC project by patient and time
+and adds new expert tissue labels. The source images originate from the
+[CO2Wounds dataset](https://data.mendeley.com/datasets/nkw5gx57hw/1) described
+in the [original study](https://doi.org/10.1016/j.compbiomed.2023.107753).
+
+## Labels
+
+| ID | Class |
+|---:|---|
+| 0 | Background |
+| 1 | Epithelial tissue |
+| 2 | Slough |
+| 3 | Granulation tissue |
+| 4 | Necrotic tissue |
+| 5 | Other |
+
+`Masks/` stores single-channel tissue IDs. `Wound_Masks/` stores binary masks
+with values 0 and 255. `Masks_RGB/` provides visualizations and must not be used
+as training targets.
+
+## Repository Layout
+
+```text
+Images/                         source RGB images
+Masks/                          tissue-label masks
+Masks_RGB/                      colorized tissue-mask visualizations
+Wound_Masks/                    binary wound masks
+metadata.jsonl                  paired files and sample metadata
+train.txt, val.txt              full-supervision patient-level split
+splits/                         full, 1/4, 1/8, and 1/16 paper splits
+gold_standard/                  multi-expert masks and agreement artifacts
+checksums.sha256                release integrity manifest
+```
+
+The identifiers in paths and metadata are dataset-internal pseudonyms. They are
+not hospital identifiers or patient names. Clinician and reviewer identifiers
+are also permanent pseudonyms.
+
+## Download and Use with TiSage
+
+Download directly into the location expected by TiSage:
+
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    repo_id="ksanchez84/LUTSeg",
+    repo_type="dataset",
+    local_dir="data/LUTSeg",
+)
+```
+
+The resulting `data/LUTSeg/Images`, `data/LUTSeg/Masks`, `train.txt`, and
+`val.txt` paths work directly with the code at
+[carlosh93/TiSage](https://github.com/carlosh93/TiSage).
+
+For Hugging Face Datasets, `metadata.jsonl` uses multiple `*_file_name` fields
+to pair each image with its tissue, visualization, and wound masks. The
+`split` column distinguishes training and validation samples.
+
+## Annotation Protocol
+
+Five clinicians with wound-care and skin-tissue expertise used a standardized
+interface. Wound boundaries were delineated first, followed by pixel-level
+annotation of epithelial, slough, granulation, necrotic, and other tissue. For
+the 46-image gold subset, all five clinicians annotated every image. A single
+reference mask was selected by anonymized clinician voting; ties used a
+fixed-seed random selection. The released inter-rater files support the
+paper-reported ICC and pairwise Dice analyses.
+
+## Ethics and Privacy
+
+Acquisition followed the Declaration of Helsinki. All data were anonymized,
+written informed consent was obtained from all participants, and the study was
+approved by the participating hospitals' ethics committees (Approval Nos.
+05-21 and 30-11-25).
+
+The release process removes EXIF, GPS, XMP, comments, and editing metadata from
+all images. Visual content should still be treated as sensitive medical data
+and handled according to applicable institutional and legal requirements.
+
+## Intended Uses and Limitations
+
+LUTSeg is intended for research in wound tissue segmentation, longitudinal
+wound analysis, annotation variability, and label-efficient learning. It is not
+a medical device and must not be used alone for diagnosis or treatment.
+
+The dataset is small, represents a specific clinical and disease context, uses
+smartphone imagery, and contains substantial class imbalance and inter-rater
+variability. Performance may not transfer to other populations, institutions,
+cameras, wound etiologies, or care settings without additional validation.
+
+## License
+
+LUTSeg is released under the Creative Commons Attribution 4.0 International
+License (CC BY 4.0). Users must provide appropriate attribution and preserve the
+dataset citation. This is the same license as the original CO2Wounds source
+image release; LUTSeg's new annotations, splits, and metadata are distributed
+under the same terms.
+
+## Citation
+
+Please cite *LUTSeg: A Longitudinal Multi-Expert Dataset for Ulcer Tissue
+Segmentation*, Eleventh ISIC Skin Image Analysis Workshop @ MICCAI 2026. The
+final proceedings BibTeX will be added when the bibliographic record is public.

@@ -1,0 +1,2 @@
+epoch,train_loss,select_mean_iou,select_mean_dice
+1,2.547309637069702,1.4387678285128946,2.7277310549546807

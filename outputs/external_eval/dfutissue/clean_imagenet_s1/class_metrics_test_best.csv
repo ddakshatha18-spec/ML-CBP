@@ -1,0 +1,5 @@
+class,iou,dice,gt_pixels
+background,82.35,90.32,198660
+fibrin,21.20,34.98,3949
+granulation,84.06,91.34,46964
+callus,42.92,60.06,52198

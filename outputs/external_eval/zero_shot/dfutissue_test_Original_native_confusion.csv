@@ -1,0 +1,5 @@
+,pred_Background,pred_Epithelial,pred_Slough,pred_Granulation,pred_Necrotic,pred_Other
+gt_background,191019,5710,1545,283,103,0
+gt_fibrin,442,334,2855,318,0,0
+gt_granulation,9050,1882,1984,32909,1139,0
+gt_callus,40703,6951,3847,637,60,0

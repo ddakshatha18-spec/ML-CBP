@@ -1,0 +1,168 @@
+{
+  "run": "paper_style_imagenet_s2",
+  "protocol": "paper_style",
+  "seed": 2,
+  "init": "imagenet",
+  "selected_on_test": true,
+  "best_epoch": 30,
+  "epochs": 30,
+  "train_images": 94,
+  "select_images": 16,
+  "test_images": 16,
+  "classes": [
+    "background",
+    "fibrin",
+    "granulation",
+    "callus"
+  ],
+  "args": {
+    "protocol": "paper_style",
+    "seed": 2,
+    "dfu_root": "external/DFUTissueSegNet/DFUTissue",
+    "init": "imagenet",
+    "init_checkpoint": "checkpoints/best_model_resnet34_weighted.pth",
+    "epochs": 30,
+    "batch_size": 2,
+    "lr": 0.001,
+    "train_size": 384,
+    "infer_size": 256,
+    "class_weights": "none",
+    "select_metric": "dice",
+    "device": "auto",
+    "output": "outputs/external_eval/dfutissue",
+    "checkpoint_dir": "checkpoints",
+    "smoke": false
+  },
+  "device": "mps",
+  "test_best_epoch": {
+    "classes": {
+      "background": {
+        "iou": 84.93243396697781,
+        "dice": 91.85239402856034,
+        "gt_pixels": 198660,
+        "pred_pixels": 208478
+      },
+      "fibrin": {
+        "iou": 35.552382652150634,
+        "dice": 52.455562870309414,
+        "gt_pixels": 3949,
+        "pred_pixels": 3646
+      },
+      "granulation": {
+        "iou": 86.29884253864678,
+        "dice": 92.64560247683183,
+        "gt_pixels": 46964,
+        "pred_pixels": 48965
+      },
+      "callus": {
+        "iou": 46.68582889811905,
+        "dice": 63.654177433247206,
+        "gt_pixels": 52198,
+        "pred_pixels": 40682
+      }
+    },
+    "mean_iou": 63.367372013973565,
+    "mean_dice": 75.15193420223719,
+    "tissue_mean_iou": 56.17901802963882,
+    "tissue_mean_dice": 69.58511426012949,
+    "mean_iou_present_classes": 63.367372013973565,
+    "binary_wound_dice": 83.11032361866357,
+    "binary_wound_iou": 71.10150886852284,
+    "unmapped_pixels": 0,
+    "total_pixels": 301771
+  },
+  "test_best_epoch_confusion": [
+    [
+      186983,
+      330,
+      1215,
+      10132
+    ],
+    [
+      1,
+      1992,
+      1325,
+      631
+    ],
+    [
+      1909,
+      260,
+      44437,
+      358
+    ],
+    [
+      19585,
+      1064,
+      1988,
+      29561
+    ]
+  ],
+  "test_last_epoch": {
+    "classes": {
+      "background": {
+        "iou": 84.93243396697781,
+        "dice": 91.85239402856034,
+        "gt_pixels": 198660,
+        "pred_pixels": 208478
+      },
+      "fibrin": {
+        "iou": 35.552382652150634,
+        "dice": 52.455562870309414,
+        "gt_pixels": 3949,
+        "pred_pixels": 3646
+      },
+      "granulation": {
+        "iou": 86.29884253864678,
+        "dice": 92.64560247683183,
+        "gt_pixels": 46964,
+        "pred_pixels": 48965
+      },
+      "callus": {
+        "iou": 46.68582889811905,
+        "dice": 63.654177433247206,
+        "gt_pixels": 52198,
+        "pred_pixels": 40682
+      }
+    },
+    "mean_iou": 63.367372013973565,
+    "mean_dice": 75.15193420223719,
+    "tissue_mean_iou": 56.17901802963882,
+    "tissue_mean_dice": 69.58511426012949,
+    "mean_iou_present_classes": 63.367372013973565,
+    "binary_wound_dice": 83.11032361866357,
+    "binary_wound_iou": 71.10150886852284,
+    "unmapped_pixels": 0,
+    "total_pixels": 301771
+  },
+  "test_last_epoch_confusion": [
+    [
+      186983,
+      330,
+      1215,
+      10132
+    ],
+    [
+      1,
+      1992,
+      1325,
+      631
+    ],
+    [
+      1909,
+      260,
+      44437,
+      358
+    ],
+    [
+      19585,
+      1064,
+      1988,
+      29561
+    ]
+  ],
+  "notes": [
+    "Metrics are percentages, pooled over all test images at each image's own resolution (TiSage-style); means include background.",
+    "paper_style selects the epoch on the test set, so test_best_epoch is optimistic; test_last_epoch is not selected.",
+    "Research prototype; 16 test images, so results are preliminary."
+  ]
+}

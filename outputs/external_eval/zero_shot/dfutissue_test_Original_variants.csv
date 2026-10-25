@@ -1,0 +1,5 @@
+variant,mean_iou,mean_dice,tissue_mean_iou,tissue_mean_dice,binary_wound_dice,unmapped_pixels,background_iou,fibrin/slough_iou,granulation_iou,background_dice,fibrin/slough_dice,granulation_dice
+callus_ignore|strict,66.38,77.59,53.68,68.52,82.86,9168,91.77,38.18,69.19,95.71,55.26,81.79
+callus_ignore|lenient,66.81,77.82,53.68,68.52,83.84,0,93.06,38.18,69.19,96.41,55.26,81.79
+callus_background|strict,60.83,71.87,46.74,60.71,74.32,16179,89.00,25.21,68.27,94.18,40.27,81.15
+callus_background|lenient,62.07,72.55,46.74,60.71,79.89,0,92.73,25.21,68.27,96.23,40.27,81.15
